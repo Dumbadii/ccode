@@ -13,7 +13,7 @@ int main() {
     int llen, flen;
 
     while((llen = getlinex(line, MAXLINE))>0 && (flen = appendline(fi, line, MAXFILE))>0)
-        printf("%d,%d", llen, flen);
+        ;//printf("%d,%d", llen, flen);
     removecomments(fi, newfi);
 
     printf("before:\n%s", fi);
@@ -26,6 +26,7 @@ int main() {
 int getlinex(char s[], int maxline) {
     int i,c; 
 
+    i = 0;
     while(i<maxline-1 && (c=getchar())!=EOF && c!='\n')
         s[i++] = c;
     
@@ -58,24 +59,26 @@ int removecomments(char fi[], char newfi[])
 
     i = j= 0;
     prechar = ' ';
-    while(fi[i] != '\0') {
-        if(prechar == '\\' && fi[i] == '\\') {
+    while(fi[i] != '\0' && prechar != '\0') {
+        if(prechar == '/' && fi[i] == '/') {
+            j--;
             while(fi[i] != '\n' && fi[i] != '\0')
                 i++;
-            if(fi[i] == '\0')
-                return 1;
+            if(fi[i] != '\0')
+                i++;
         }
         else 
-            if(prechar == '\\' && fi[i]=='*') {
+            if(prechar == '/' && fi[i]=='*') {
+                j--;
                 prechar = ' ';
-                while(!(prechar == '*' && fi[i] == '\\') && fi[i] != '\0')
+                while(!(prechar == '*' && fi[i] == '/') && fi[i] != '\0')
                    prechar = fi[i++]; 
-
-                if (fi[i] == '\0') 
-                    return 1;
-            }
-            else
-                newfi[j++] = fi[i++];
+                if(fi[i] != '\0')
+                    i++;
+        }
+        
+        prechar = fi[i];
+        newfi[j++] = fi[i++];
     }
     newfi[j] = '\0';
     return 0;
