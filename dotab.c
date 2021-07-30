@@ -4,8 +4,6 @@
 #define MAXLINE 100
 #define DEFAULTABSPACE 8
 
-int tabspace[MAXTAB];
-
 int getlinex(char*, int);
 int tabstop(int, int*, int);
 void detab(char*, int*, int);
@@ -22,9 +20,9 @@ int main(int argc, char *argv[])
 
     tabcnt = 0;
     while (--argc > 0)
-        tabspace[tabcnt++] = atoi(*++argv);
+        tablen[tabcnt++] = atoi(*++argv);
     while(tabcnt < MAXTAB)
-        tabspace[tabcnt++] = DEFAULTABSPACE;
+        tablen[tabcnt++] = DEFAULTABSPACE;
 
     while ( (len = getlinex(line, MAXLINE)) > 0) {
         detab(line, tablen, MAXTAB);
@@ -43,7 +41,7 @@ int getlinex(char *line, int maxline)
     int i;
 
     i = 0;
-    while (i < maxline-1 && (c = getchar()) != EOF && c != '\0')
+    while (i < maxline-1 && (c = getchar()) != EOF && c != '\n')
         line[i++] = c;
     
     if (c == '\n')
