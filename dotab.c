@@ -5,13 +5,13 @@
 #define DEFAULTABSPACE 8
 
 int getlinex(char*, int);
-int tabstop(int, int*, int);
-void detab(char*, int*, int);
+int tabstop(int, int*);
+void detab(char*, int*);
 void entab(char*, int*, int);
 
 int main(int argc, char *argv[])
 {
-    int tablen[MAXTAB];
+    int tablen[MAXTAB+1];
     int tabcnt;
     int len;
     char line[MAXLINE];
@@ -21,12 +21,14 @@ int main(int argc, char *argv[])
     tabcnt = 0;
     while (--argc > 0)
         tablen[tabcnt++] = atoi(*++argv);
-    while(tabcnt < MAXTAB)
+    
+    if (tabcnt == 0)
         tablen[tabcnt++] = DEFAULTABSPACE;
+    tablen[tabcnt] = 0;
 
-    while ( (len = getlinex(line, MAXLINE)) > 0) {
-        detab(line, tablen, MAXTAB);
-    } 
+    while ( (len = getlinex(line, MAXLINE)) == 0);
+    detab(line, tablen);
+    return 0;
     
     while ( (len = getlinex(line, MAXLINE)) > 0) {
         entab(line, tablen, MAXTAB);
@@ -52,26 +54,32 @@ int getlinex(char *line, int maxline)
     return i;
 }
 
-int tabstop(int pos, int* tablen, int tablim)
+int tabstop(int pos, int* tablen)
 {
-    int temp;
-    temp = pos;
-    while (pos > *tablen && tablim-- > 0)
-        pos -= *tablen++;
-    return temp - pos + *tablen;
+    int j = 0;
+    while (tablen[j])
+        j++;
+    j--;
+
+   pos %=tablen[j]; 
+    while(j > 0 && pos < tablen[j-1] )
+        pos %= tablen[--j];
+    return tablen[j] - pos;
 }
 
-void detab(char *line, int *tablen, int tablim)
+void detab(char *line, int *tablen)
 {
-    int i,j;
+    int i,j,k;
     char c, detabline[MAXLINE];
     i = j = 0;
 
     while ((c = line[i++]) != '\0') {
-        if (c == '\t')
-            while (j < tabstop(j, tablen, tablim))
+        if (c == '\t') {
+            k = tabstop(j, tablen);
+            printf("k:%d\n", k);
+            while (k--)
                 detabline[j++] = ' ';
-        else
+        } else
             detabline[j++] = c;
     }
 
@@ -89,7 +97,7 @@ void entab(char *line, int *tablen, int tablim)
         entabline[j] = c;
         if (c == ' ') {
             if (!tmpos) tmpos = j;
-            if (i == tabstop(i,tablen,tablim)) {
+            if (i == tabstop(i,tablen)) {
                 j = tmpos;
                 entabline[j] = '\t';
                 tmpos = 0;
